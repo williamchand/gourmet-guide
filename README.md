@@ -53,6 +53,15 @@ terraform fmt -check
 terraform validate
 ```
 
+## Local Emulator Workflow
+Use `docker-compose.dev.yml` to run Firestore + Cloud Storage emulators for local seed/publish testing.
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+Detailed steps and env vars: `docs/local_emulators.md`.
+
 ## Governance and Standards
 - Coding standards: `docs/coding_standards.md`
 - Secrets strategy: `docs/secrets.md`
