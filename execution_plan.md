@@ -30,22 +30,22 @@
 
 ## 3. Frontend (React)
 ### 3.1 Customer Experience
-- [ ] Build microphone-driven realtime assistant UI.
-- [ ] Add transcript stream and recommendation panel.
-- [ ] Support allergy profile preferences and updates mid-session.
-- [ ] Add menu image upload/capture flow for vision safety checks.
+- [x] Build microphone-driven realtime assistant UI.
+- [x] Add transcript stream and recommendation panel.
+- [x] Support allergy profile preferences and updates mid-session.
+- [x] Add menu image upload/capture flow for vision safety checks.
 
 ### 3.2 Admin Experience
-- [ ] Create menu management dashboard.
-- [ ] Add allergen/ingredient tagging forms.
-- [ ] Add combo builder and preview tools.
+- [x] Create menu management dashboard.
+- [x] Add allergen/ingredient tagging forms.
+- [x] Add combo builder and preview tools.
 
 ## 4. Infrastructure (Terraform on Google Cloud)
 - [x] Provision Cloud Run for backend services.
 - [x] Provision Firestore.
 - [x] Provision Cloud Storage for menu/dish images.
-- [ ] Configure IAM, networking, and least-privilege service accounts.
-- [ ] Add environment stacks (`dev`, `staging`, `prod`).
+- [x] Configure IAM, networking, and least-privilege service accounts.
+- [x] Add environment stacks (`dev`, `staging`, `prod`).
 
 ## 5. Quality and Reliability
 - [ ] Unit tests across backend domain logic and filtering.

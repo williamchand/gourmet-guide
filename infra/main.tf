@@ -14,6 +14,12 @@ provider "google" {
   region  = var.region
 }
 
+locals {
+  name_prefix      = "gourmet-guide-${var.environment}"
+  image_bucket     = "${var.project_id}-${var.environment}-menu-images"
+  run_service_name = "${local.name_prefix}-backend"
+}
+
 resource "google_firestore_database" "default" {
   project                           = var.project_id
   name                              = "(default)"
@@ -26,27 +32,66 @@ resource "google_firestore_database" "default" {
 }
 
 resource "google_storage_bucket" "menu_images" {
-  name                        = "${var.project_id}-menu-images"
+  name                        = local.image_bucket
   location                    = var.region
   uniform_bucket_level_access = true
   force_destroy               = false
 }
 
-resource "google_service_account" "backend" {
-  account_id   = "gourmet-guide-backend"
-  display_name = "GourmetGuide Backend"
+resource "google_service_account" "backend_runtime" {
+  account_id   = "${replace(local.name_prefix, "-", "")}-runtime"
+  display_name = "GourmetGuide ${var.environment} Backend Runtime"
+}
+
+resource "google_service_account" "backend_deployer" {
+  account_id   = "${replace(local.name_prefix, "-", "")}-deployer"
+  display_name = "GourmetGuide ${var.environment} Backend Deployer"
+}
+
+resource "google_project_iam_member" "runtime_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.backend_runtime.email}"
+}
+
+resource "google_storage_bucket_iam_member" "runtime_storage" {
+  bucket = google_storage_bucket.menu_images.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.backend_runtime.email}"
+}
+
+resource "google_project_iam_member" "deployer_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${google_service_account.backend_deployer.email}"
+}
+
+resource "google_project_iam_member" "deployer_sa_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.backend_deployer.email}"
 }
 
 resource "google_cloud_run_v2_service" "backend" {
-  name     = "gourmet-guide-backend"
+  name     = local.run_service_name
   location = var.region
+  ingress  = var.cloud_run_ingress
 
   template {
-    service_account = google_service_account.backend.email
+    service_account = google_service_account.backend_runtime.email
     scaling {
       min_instance_count = 0
       max_instance_count = 3
     }
+
+    dynamic "vpc_access" {
+      for_each = var.vpc_connector != "" ? [1] : []
+      content {
+        connector = var.vpc_connector
+        egress    = "PRIVATE_RANGES_ONLY"
+      }
+    }
+
     containers {
       image = var.backend_image
       resources {
@@ -78,5 +123,18 @@ resource "google_cloud_run_v2_service" "backend" {
     max_instance_request_concurrency = 80
   }
 
-  depends_on = [google_firestore_database.default]
+  depends_on = [
+    google_firestore_database.default,
+    google_project_iam_member.runtime_firestore,
+    google_storage_bucket_iam_member.runtime_storage,
+  ]
+}
+
+resource "google_cloud_run_service_iam_member" "public_invoker" {
+  count    = var.allow_unauthenticated ? 1 : 0
+  location = google_cloud_run_v2_service.backend.location
+  project  = var.project_id
+  service  = google_cloud_run_v2_service.backend.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
