@@ -37,6 +37,15 @@ type menuExtractionResponse struct {
 	Note      string            `json:"note"`
 }
 
+type menuTaggingRequest struct {
+	MenuItems []domain.MenuItem `json:"menuItems"`
+}
+
+type sessionStartResponse struct {
+	Session           domain.ConciergeSession `json:"session"`
+	SuggestedMenuTags []domain.MenuItem       `json:"suggestedMenuItems"`
+}
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -67,7 +76,8 @@ func main() {
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
 
-		if err := store.SaveMenuSafetyMetadata(ctx, req.RestaurantID, req.MenuItems); err != nil {
+		suggestedItems, err := concierge.SaveMenuItems(ctx, req.RestaurantID, req.MenuItems)
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -76,7 +86,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		writeJSON(w, session)
+		writeJSON(w, sessionStartResponse{Session: session, SuggestedMenuTags: suggestedItems})
 	})
 
 	mux.HandleFunc("/v1/sessions/", func(w http.ResponseWriter, r *http.Request) {
@@ -139,11 +149,29 @@ func main() {
 
 	mux.HandleFunc("/v1/restaurants/", func(w http.ResponseWriter, r *http.Request) {
 		parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/v1/restaurants/"), "/")
-		if len(parts) != 2 || parts[0] == "" || parts[1] != "menu-extraction" || r.Method != http.MethodPost {
+		if len(parts) != 2 || parts[0] == "" {
 			http.NotFound(w, r)
 			return
 		}
 		restaurantID := parts[0]
+		if parts[1] == "menu-tags" && r.Method == http.MethodPost {
+			var req menuTaggingRequest
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				http.Error(w, "invalid JSON", http.StatusBadRequest)
+				return
+			}
+			enriched, err := concierge.SaveMenuItems(r.Context(), restaurantID, req.MenuItems)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			writeJSON(w, map[string]any{"menuItems": enriched, "note": "Tags were auto-suggested to simplify allergy/diet filters for business owners."})
+			return
+		}
+		if parts[1] != "menu-extraction" || r.Method != http.MethodPost {
+			http.NotFound(w, r)
+			return
+		}
 		var req imageUploadRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "invalid JSON", http.StatusBadRequest)
@@ -162,7 +190,7 @@ func main() {
 		writeJSON(w, menuExtractionResponse{
 			ImagePath: imagePath,
 			MenuItems: menuItems,
-			Note:      "Vision extraction is an optional restaurant onboarding workflow; live user sessions remain text/audio-first.",
+			Note:      "Vision extraction is optional for onboarding; for live interaction, use text/audio session APIs.",
 		})
 	})
 

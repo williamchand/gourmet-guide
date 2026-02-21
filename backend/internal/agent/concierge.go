@@ -37,6 +37,14 @@ func NewConciergeService(store gcp.SessionStore, imageStore gcp.ImageStore, runt
 	}
 }
 
+func (s *ConciergeService) SaveMenuItems(ctx context.Context, restaurantID string, items []domain.MenuItem) ([]domain.MenuItem, error) {
+	enriched := EnrichMenuItemsWithSuggestedTags(items)
+	if err := s.store.SaveMenuSafetyMetadata(ctx, restaurantID, enriched); err != nil {
+		return nil, err
+	}
+	return enriched, nil
+}
+
 func (s *ConciergeService) StartSession(ctx context.Context, restaurantID string, hardAllergens []domain.Allergen, preferenceTags []string) (domain.ConciergeSession, error) {
 	now := time.Now().UTC()
 	session := domain.ConciergeSession{
@@ -134,22 +142,12 @@ func (s *ConciergeService) AutoExtractMenuFromImage(ctx context.Context, restaur
 	if err != nil {
 		return nil, "", err
 	}
-	if err := s.store.SaveMenuSafetyMetadata(ctx, restaurantID, items); err != nil {
+	enriched, err := s.SaveMenuItems(ctx, restaurantID, items)
+	if err != nil {
 		return nil, "", err
 	}
-	return items, imagePath, nil
+	return enriched, imagePath, nil
 }
-func (s *ConciergeService) UploadSessionImage(ctx context.Context, sessionID, fileName string, content []byte) (string, error) {
-	path, err := s.imageStore.SaveSessionImage(ctx, sessionID, fileName, content)
-	if err != nil {
-		return "", err
-	}
-	if err := s.store.SaveImageReference(ctx, sessionID, path); err != nil {
-		return "", err
-	}
-	return path, nil
-}
-
 func (s *ConciergeService) GetSession(ctx context.Context, sessionID string) (domain.ConciergeSession, error) {
 	return s.store.LoadSession(ctx, sessionID)
 }

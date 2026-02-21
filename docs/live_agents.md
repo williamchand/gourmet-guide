@@ -39,6 +39,11 @@ Avoid for hackathon MVP unless strictly required:
 - **Restaurant onboarding mode (alternative):** upload a menu image to auto-extract draft menu items and reduce manual restaurant data entry.
 - Recommended endpoint for onboarding extraction: `POST /v1/restaurants/{restaurantId}/menu-extraction`.
 
+## Menu Tagging for RAG + Filtering
+- Business owners can submit draft items to `POST /v1/restaurants/{restaurantId}/menu-tags` to auto-suggest tags.
+- Suggested tags support allergy and dietary filtering (examples: `halal`, `no-pork`, `no-beef`, `no-lard`, `vegan`, `gluten-free`).
+- Tagging is used to improve retrieval/ranking quality while reducing manual product data entry.
+
 ## MVP Acceptance Criteria
 - User can state allergies by voice and receive filtered recommendations.
 - User can interrupt while the agent is responding, and the system switches context immediately.
