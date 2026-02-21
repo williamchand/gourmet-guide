@@ -6,5 +6,5 @@ export const AVAILABLE_ALLERGIES = [
   'Gluten',
   'Soy',
   'Shellfish',
-  'Sesame',
+  'Sesame'
 ];

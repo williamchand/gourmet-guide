@@ -10,7 +10,9 @@ describe('App', () => {
     render(<App />);
 
     expect(screen.getByText('Realtime Concierge')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Start microphone' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Start microphone' })
+    ).toBeInTheDocument();
     expect(screen.getByText('Transcript Stream')).toBeInTheDocument();
   });
 
@@ -37,6 +39,8 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Start microphone' }));
 
-    expect(screen.getByText(/Listening… tell me what dish/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Listening… tell me what dish/)
+    ).toBeInTheDocument();
   });
 });

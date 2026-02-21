@@ -10,7 +10,9 @@ function normalizeRoute(pathname) {
 }
 
 export function useRoute() {
-  const [route, setRoute] = useState(() => normalizeRoute(window.location.pathname));
+  const [route, setRoute] = useState(() =>
+    normalizeRoute(window.location.pathname)
+  );
 
   useEffect(() => {
     if (route !== window.location.pathname) {
