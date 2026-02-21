@@ -1,0 +1,4 @@
+project_id    = "your-gcp-project-id"
+region        = "us-central1"
+backend_image = "us-central1-docker.pkg.dev/your-gcp-project-id/gourmet-guide/backend:latest"
+gemini_model  = "gemini-2.0-flash-live-001"

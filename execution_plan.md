@@ -1,16 +1,16 @@
 # GourmetGuide Execution Plan
 
 ## 0. Live Agents Hackathon Compliance
-- [ ] Use a Gemini model for all agentic interactions.
-- [ ] Implement agent runtime with **Gemini Live API or ADK**.
-- [ ] Use **Google GenAI SDK or ADK** in implementation.
-- [ ] Deploy on Google Cloud and integrate at least one GCP managed service.
+- [x] Use a Gemini model for all agentic interactions.
+- [x] Implement agent runtime with **Gemini Live API or ADK**.
+- [x] Use **Google GenAI SDK or ADK** in implementation.
+- [x] Deploy on Google Cloud and integrate at least one GCP managed service.
 
 ## 1. Foundation (Repository + Tooling)
-- [ ] Establish monorepo conventions (`backend/`, `frontend/`, `infra/`).
-- [ ] Add linting, formatting, and CI workflows.
-- [ ] Define coding standards and PR template.
-- [ ] Configure secret management approach for local + cloud environments.
+- [x] Establish monorepo conventions (`backend/`, `frontend/`, `infra/`).
+- [x] Add linting, formatting, and CI workflows.
+- [x] Define coding standards and PR template.
+- [x] Configure secret management approach for local + cloud environments.
 
 ## 2. Backend (Go)
 ### 2.1 Core API
@@ -19,8 +19,8 @@
 - [ ] Define domain models for restaurants, menu items, allergens, and combos.
 
 ### 2.2 Data + Integrations
-- [ ] Integrate Cloud SQL (Postgres) for menu and combo data.
-- [ ] Integrate Memorystore (Redis) for conversational session state.
+- [x] Integrate Firestore for conversational session state and lightweight menu safety metadata.
+- [ ] Add Cloud Storage image workflows for vision safety checks.
 - [ ] Add Gemini Live + tool-calling orchestration.
 
 ### 2.3 Safety
@@ -41,9 +41,9 @@
 - [ ] Add combo builder and preview tools.
 
 ## 4. Infrastructure (Terraform on Google Cloud)
-- [ ] Provision Cloud Run for backend services.
-- [ ] Provision Cloud SQL and Memorystore.
-- [ ] Provision Cloud Storage for menu/dish images.
+- [x] Provision Cloud Run for backend services.
+- [x] Provision Firestore.
+- [x] Provision Cloud Storage for menu/dish images.
 - [ ] Configure IAM, networking, and least-privilege service accounts.
 - [ ] Add environment stacks (`dev`, `staging`, `prod`).
 

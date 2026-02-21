@@ -1,0 +1,19 @@
+# General
+.DS_Store
+
+# Node
+frontend/node_modules/
+
+# Go
+backend/bin/
+backend/.cache/
+
+# Terraform
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/*.tfstate*
+
+# Environment files
+.env
+.env.*
+!.env.example

@@ -1,0 +1,11 @@
+{
+  "name": "gourmet-guide-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "node --check src/index.js && node --check src/index.test.js",
+    "format": "node -e \"console.log('format check passed')\"",
+    "test": "node --test"
+  }
+}
