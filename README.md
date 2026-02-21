@@ -29,6 +29,11 @@ Frontend (static hosting) → Cloud Run backend → Gemini Live (Vertex AI) → 
 cd backend
 go test ./...
 go run ./cmd/api
+# generate ~100 Gemini-powered menu items + corresponding food images (requires GOOGLE_API_KEY)
+GOOGLE_API_KEY=your_key GOOGLE_CLOUD_PROJECT=your_project GCS_BUCKET=your_bucket \
+  go run -tags gcp ./cmd/seeddata --count 100 --out seed/output
+# optional: keep local-only output without cloud writes
+GOOGLE_API_KEY=your_key go run ./cmd/seeddata --count 100 --skip-gcs-upload --skip-firestore-write
 ```
 
 ### Frontend

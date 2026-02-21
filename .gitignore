@@ -17,3 +17,6 @@ infra/*.tfstate*
 .env
 .env.*
 !.env.example
+
+# Generated seed artifacts
+backend/seed/output/
