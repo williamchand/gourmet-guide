@@ -48,18 +48,18 @@
 - [x] Add environment stacks (`dev`, `staging`, `prod`).
 
 ## 5. Quality and Reliability
-- [ ] Unit tests across backend domain logic and filtering.
-- [ ] Integration tests for database/tool integration paths.
-- [ ] E2E tests for key customer/admin journeys.
-- [ ] Add interruption-path and streaming resiliency tests.
-- [ ] Performance targets: latency budgets and load-testing gates.
+- [x] Unit tests across backend domain logic and filtering.
+- [x] Integration tests for database/tool integration paths.
+- [x] E2E tests for key customer/admin journeys.
+- [x] Add interruption-path and streaming resiliency tests.
+- [x] Performance targets: latency budgets and load-testing gates.
 
 ## 6. Release Plan
 ### Phase 1 (Hackathon MVP)
-- [ ] Voice interaction + allergy filtering
-- [ ] Vision-based safety checks
-- [ ] Basic combo recommendations
-- [ ] Cloud deployment demo
+- [x] Voice interaction + allergy filtering
+- [x] Vision-based safety checks
+- [x] Basic combo recommendations
+- [x] Cloud deployment demo
 
 ### Phase 2
 - [ ] Nutritional scoring
