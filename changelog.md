@@ -4,11 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
-- Added `docs/live_agents.md` to define Live Agents (audio/vision) scope, mandatory technology constraints, and MVP acceptance criteria.
+- Added Cloud Storage provisioning in Terraform for menu image handling and exposed bucket output.
+- Added Cloud Run cost controls in Terraform (min instance 0, high concurrency, lower memory target).
+- Added backend runtime cost controls: relevant-menu-item limiting and in-memory prompt-response caching.
 
 ### Changed
-- Updated `README.md` to include Live Agents requirements and reference to `docs/live_agents.md`.
-- Updated `execution_plan.md` with a Live Agents compliance section and vision/interruption-specific milestones.
+- Refactored architecture/docs to the lean hackathon stack: Cloud Run + Firestore + Cloud Storage + Gemini on Vertex AI.
+- Updated execution plan to remove Cloud SQL/Memorystore assumptions for MVP and align with cost-first delivery.
+- Updated secrets guidance to prefer identity-based cloud auth and keep API keys local/optional.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
