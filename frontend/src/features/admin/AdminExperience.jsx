@@ -21,13 +21,15 @@ export function AdminExperience() {
           ? item.allergens.filter((value) => value !== allergy)
           : [...item.allergens, allergy];
         return { ...item, allergens };
-      }),
+      })
     );
   };
 
   const toggleComboItem = (itemName) => {
     setComboItems((current) =>
-      current.includes(itemName) ? current.filter((name) => name !== itemName) : [...current, itemName],
+      current.includes(itemName)
+        ? current.filter((name) => name !== itemName)
+        : [...current, itemName]
     );
   };
 
@@ -35,7 +37,9 @@ export function AdminExperience() {
     <section className="panel-grid">
       <article className="card">
         <h2>Menu Management Dashboard</h2>
-        <p>Maintain canonical menu catalog with ingredient and allergen metadata.</p>
+        <p>
+          Maintain canonical menu catalog with ingredient and allergen metadata.
+        </p>
         <label htmlFor="menu-item-select">Menu item</label>
         <select
           id="menu-item-select"
@@ -53,7 +57,10 @@ export function AdminExperience() {
         <textarea value={selectedItem?.ingredients ?? ''} readOnly rows={3} />
 
         <h3>Allergen Tags</h3>
-        <AllergySelector selected={selectedItem?.allergens ?? []} onToggle={toggleTag} />
+        <AllergySelector
+          selected={selectedItem?.allergens ?? []}
+          onToggle={toggleTag}
+        />
       </article>
 
       <article className="card">

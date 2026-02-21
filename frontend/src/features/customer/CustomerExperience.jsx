@@ -6,28 +6,38 @@ export function CustomerExperience() {
   const [isListening, setIsListening] = useState(false);
   const [allergies, setAllergies] = useState(['Peanuts']);
   const [transcript, setTranscript] = useState([
-    { speaker: 'Assistant', text: 'Hi! I can help you find safe menu items. What should we avoid?' },
-    { speaker: 'Customer', text: 'No peanuts, and I prefer dairy-free meals.' },
+    {
+      speaker: 'Assistant',
+      text: 'Hi! I can help you find safe menu items. What should we avoid?'
+    },
+    { speaker: 'Customer', text: 'No peanuts, and I prefer dairy-free meals.' }
   ]);
   const [uploadedImageName, setUploadedImageName] = useState('');
 
   const recommendations = useMemo(
     () =>
       BASE_RECOMMENDATIONS.map((entry) => {
-        const hasConflict = allergies.some((allergy) => entry.notes.toLowerCase().includes(allergy.toLowerCase()));
+        const hasConflict = allergies.some((allergy) =>
+          entry.notes.toLowerCase().includes(allergy.toLowerCase())
+        );
         return { ...entry, risk: hasConflict ? 'Review required' : entry.risk };
       }),
-    [allergies],
+    [allergies]
   );
 
   const toggleAllergy = (next) => {
     setAllergies((current) =>
-      current.includes(next) ? current.filter((value) => value !== next) : [...current, next],
+      current.includes(next)
+        ? current.filter((value) => value !== next)
+        : [...current, next]
     );
 
     setTranscript((current) => [
       ...current,
-      { speaker: 'Assistant', text: `Updated allergy profile to include ${next}. Re-running safety checks now.` },
+      {
+        speaker: 'Assistant',
+        text: `Updated allergy profile to include ${next}. Re-running safety checks now.`
+      }
     ]);
   };
 
@@ -39,8 +49,8 @@ export function CustomerExperience() {
         speaker: 'Assistant',
         text: !isListening
           ? 'Listening… tell me what dish you are considering.'
-          : 'Microphone paused. I can continue through text recommendations.',
-      },
+          : 'Microphone paused. I can continue through text recommendations.'
+      }
     ]);
   };
 
@@ -55,8 +65,8 @@ export function CustomerExperience() {
       ...current,
       {
         speaker: 'Assistant',
-        text: `Analyzing ${file.name} for allergen signals in ingredients and cross-contact warnings.`,
-      },
+        text: `Analyzing ${file.name} for allergen signals in ingredients and cross-contact warnings.`
+      }
     ]);
   };
 
@@ -87,7 +97,9 @@ export function CustomerExperience() {
           capture="environment"
           onChange={onImageChange}
         />
-        {uploadedImageName && <p className="caption">Queued image: {uploadedImageName}</p>}
+        {uploadedImageName && (
+          <p className="caption">Queued image: {uploadedImageName}</p>
+        )}
       </article>
 
       <article className="card">
