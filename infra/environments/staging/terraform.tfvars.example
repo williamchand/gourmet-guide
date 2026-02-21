@@ -1,0 +1,8 @@
+project_id             = "your-gcp-project-id"
+environment            = "staging"
+region                 = "us-central1"
+backend_image          = "us-central1-docker.pkg.dev/your-gcp-project-id/gourmet-guide/backend:staging"
+gemini_model           = "gemini-2.0-flash-live-001"
+cloud_run_ingress      = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+allow_unauthenticated  = false
+vpc_connector          = "projects/your-gcp-project-id/locations/us-central1/connectors/staging-serverless"
