@@ -34,8 +34,10 @@ go run ./cmd/api
 ### Frontend
 ```bash
 cd frontend
+npm install
 npm run lint
 npm test
+npm run build
 ```
 
 ### Infrastructure
