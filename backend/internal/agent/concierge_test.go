@@ -49,3 +49,33 @@ func TestInterruptSessionUpdatesStatus(t *testing.T) {
 		t.Fatalf("expected interrupted status, got %s", updated.Status)
 	}
 }
+
+func TestApplySafetyPoliciesTreatsDietaryTagsAsHardRequirement(t *testing.T) {
+	t.Parallel()
+	items := []domain.MenuItem{
+		{Name: "Halal Salad", Tags: []string{"halal", "no-pork", "no-lard"}},
+		{Name: "Pork Ramen", Tags: []string{"spicy"}},
+	}
+
+	safe, warning := applySafetyPolicies(items, nil, []string{"halal", "no-pork"})
+	if len(safe) != 1 {
+		t.Fatalf("expected 1 dietary-safe item, got %d", len(safe))
+	}
+	if safe[0].Name != "Halal Salad" {
+		t.Fatalf("expected Halal Salad, got %q", safe[0].Name)
+	}
+	if warning == "" {
+		t.Fatal("expected warning for excluded dietary mismatches")
+	}
+}
+
+func TestHasAllRequiredTags(t *testing.T) {
+	t.Parallel()
+	item := domain.MenuItem{Tags: []string{"Halal", "No-Pork", "no-lard"}}
+	if !hasAllRequiredTags(item, []string{"halal", "no-pork"}) {
+		t.Fatal("expected tags to satisfy required dietary tags")
+	}
+	if hasAllRequiredTags(item, []string{"halal", "vegan"}) {
+		t.Fatal("expected false when missing required dietary tag")
+	}
+}

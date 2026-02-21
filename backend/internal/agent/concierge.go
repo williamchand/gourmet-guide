@@ -182,7 +182,18 @@ func applySafetyPolicies(items []domain.MenuItem, hardAllergens []domain.Allerge
 		filtered = append(filtered, item)
 	}
 
+	dietaryFiltered := false
 	if len(preferenceTags) > 0 {
+		strictFiltered := make([]domain.MenuItem, 0, len(filtered))
+		// Dietary constraints are treated as hard requirements in-session for safety.
+		for _, item := range filtered {
+			if hasAllRequiredTags(item, preferenceTags) {
+				strictFiltered = append(strictFiltered, item)
+			} else {
+				dietaryFiltered = true
+			}
+		}
+		filtered = strictFiltered
 		sort.SliceStable(filtered, func(i, j int) bool {
 			return preferenceScore(filtered[i], preferenceTags) > preferenceScore(filtered[j], preferenceTags)
 		})
@@ -190,6 +201,9 @@ func applySafetyPolicies(items []domain.MenuItem, hardAllergens []domain.Allerge
 
 	if crossContaminationWarning {
 		return filtered, "Some items were excluded due to cross-contamination risk."
+	}
+	if dietaryFiltered {
+		return filtered, "Some menu items were excluded because they did not satisfy required dietary tags."
 	}
 	if len(filtered) < len(items) {
 		return filtered, "Some menu items were removed by hard allergen filters."
@@ -204,6 +218,23 @@ func containsAnyAllergen(itemAllergens []domain.Allergen, restricted map[domain.
 		}
 	}
 	return false
+}
+
+func hasAllRequiredTags(item domain.MenuItem, requiredTags []string) bool {
+	tagSet := map[string]struct{}{}
+	for _, tag := range item.Tags {
+		tagSet[strings.ToLower(strings.TrimSpace(tag))] = struct{}{}
+	}
+	for _, required := range requiredTags {
+		normalized := strings.ToLower(strings.TrimSpace(required))
+		if normalized == "" {
+			continue
+		}
+		if _, ok := tagSet[normalized]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func preferenceScore(item domain.MenuItem, preferenceTags []string) int {
