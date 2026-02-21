@@ -45,6 +45,12 @@ npm test
 npm run build
 ```
 
+### Frontend deploy (GCS static hosting)
+```bash
+scripts/deploy_frontend_gcs.sh --bucket <your-bucket-name> --project <your-project-id>
+```
+Detailed guide: `docs/frontend_gcs_deploy.md`.
+
 ### Infrastructure
 ```bash
 cd infra
