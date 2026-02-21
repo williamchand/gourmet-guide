@@ -34,13 +34,46 @@ describe('App', () => {
     expect(screen.getByText('Menu Management Dashboard')).toBeInTheDocument();
   });
 
-  it('updates transcript when microphone is toggled', () => {
+  it('runs the customer journey: microphone + allergy updates + vision upload', () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Start microphone' }));
-
     expect(
       screen.getByText(/Listening… tell me what dish/)
     ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Shellfish' }));
+    expect(
+      screen.getByText(/Updated allergy profile to include Shellfish/)
+    ).toBeInTheDocument();
+
+    const file = new File(['menu image bytes'], 'menu-photo.png', {
+      type: 'image/png'
+    });
+    fireEvent.change(screen.getByLabelText('Upload/capture menu image'), {
+      target: { files: [file] }
+    });
+
+    expect(screen.getByText('Queued image: menu-photo.png')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Analyzing menu-photo.png for allergen signals/)
+    ).toBeInTheDocument();
+  });
+
+  it('runs the admin journey: update combo and preview', () => {
+    window.history.pushState({}, '', '/admin');
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText('Combo name'), {
+      target: { value: 'Hackathon Special Combo' }
+    });
+    expect(screen.getByText('Hackathon Special Combo')).toBeInTheDocument();
+
+    const itemToggle = screen.getByRole('checkbox', {
+      name: 'Citrus Herb Chicken'
+    });
+    fireEvent.click(itemToggle);
+
+    expect(screen.getByRole('listitem', { name: 'Citrus Herb Chicken' })).toBeInTheDocument();
   });
 });
