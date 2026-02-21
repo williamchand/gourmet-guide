@@ -1,4 +1,4 @@
-.PHONY: backend-test frontend-test infra-check fmt lint
+.PHONY: backend-test frontend-test infra-check fmt lint deploy-frontend-gcs
 
 backend-test:
 	cd backend && go test ./...
@@ -15,3 +15,8 @@ fmt:
 
 lint:
 	cd frontend && npm run lint && npm run format
+
+
+deploy-frontend-gcs:
+	@if [ -z "$$BUCKET" ]; then echo "Usage: make deploy-frontend-gcs BUCKET=<bucket> [PROJECT=<project>]"; exit 1; fi
+	./scripts/deploy_frontend_gcs.sh --bucket "$$BUCKET" $(if $(PROJECT),--project "$(PROJECT)",)
