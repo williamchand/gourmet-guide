@@ -14,19 +14,19 @@
 
 ## 2. Backend (Go)
 ### 2.1 Core API
-- [ ] Build HTTP/WebSocket API surface for realtime concierge sessions.
-- [ ] Implement session lifecycle management and interruption handling.
-- [ ] Define domain models for restaurants, menu items, allergens, and combos.
+- [x] Build HTTP/WebSocket API surface for realtime concierge sessions.
+- [x] Implement session lifecycle management and interruption handling.
+- [x] Define domain models for restaurants, menu items, allergens, and combos.
 
 ### 2.2 Data + Integrations
 - [x] Integrate Firestore for conversational session state and lightweight menu safety metadata.
-- [ ] Add Cloud Storage image workflows for vision safety checks.
-- [ ] Add Gemini Live + tool-calling orchestration.
+- [x] Add Cloud Storage image workflows for vision safety checks.
+- [x] Add Gemini Live + tool-calling orchestration.
 
 ### 2.3 Safety
-- [ ] Implement hard allergen filters and preference ranking.
-- [ ] Add cross-contamination policy checks.
-- [ ] Add fallback handling and disclaimer responses for high-risk queries.
+- [x] Implement hard allergen filters and preference ranking.
+- [x] Add cross-contamination policy checks.
+- [x] Add fallback handling and disclaimer responses for high-risk queries.
 
 ## 3. Frontend (React)
 ### 3.1 Customer Experience
