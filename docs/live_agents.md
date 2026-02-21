@@ -33,6 +33,12 @@ Avoid for hackathon MVP unless strictly required:
 - Agent cross-checks allergens against structured menu/allergen data.
 - Agent returns safety explanation + safer alternatives when risk detected.
 
+
+## Vision API Modes
+- **Live user session mode (default):** text/audio interaction without mandatory image input.
+- **Restaurant onboarding mode (alternative):** upload a menu image to auto-extract draft menu items and reduce manual restaurant data entry.
+- Recommended endpoint for onboarding extraction: `POST /v1/restaurants/{restaurantId}/menu-extraction`.
+
 ## MVP Acceptance Criteria
 - User can state allergies by voice and receive filtered recommendations.
 - User can interrupt while the agent is responding, and the system switches context immediately.

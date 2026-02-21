@@ -18,16 +18,23 @@ import (
 const highRiskDisclaimer = "I cannot confidently guarantee safety for that request. Please confirm ingredients and cross-contamination policy with restaurant staff before ordering."
 
 type ConciergeService struct {
-	store      gcp.SessionStore
-	imageStore gcp.ImageStore
-	runtime    *Runtime
+	store         gcp.SessionStore
+	imageStore    gcp.ImageStore
+	menuExtractor MenuExtractor
+	runtime       *Runtime
 
 	mu      sync.Mutex
 	ongoing map[string]context.CancelFunc
 }
 
 func NewConciergeService(store gcp.SessionStore, imageStore gcp.ImageStore, runtime *Runtime) *ConciergeService {
-	return &ConciergeService{store: store, imageStore: imageStore, runtime: runtime, ongoing: map[string]context.CancelFunc{}}
+	return &ConciergeService{
+		store:         store,
+		imageStore:    imageStore,
+		menuExtractor: &HeuristicMenuExtractor{},
+		runtime:       runtime,
+		ongoing:       map[string]context.CancelFunc{},
+	}
 }
 
 func (s *ConciergeService) StartSession(ctx context.Context, restaurantID string, hardAllergens []domain.Allergen, preferenceTags []string) (domain.ConciergeSession, error) {
@@ -118,6 +125,20 @@ func (s *ConciergeService) EndSession(ctx context.Context, sessionID string) err
 	return s.store.SaveSession(ctx, session)
 }
 
+func (s *ConciergeService) AutoExtractMenuFromImage(ctx context.Context, restaurantID, fileName string, content []byte) ([]domain.MenuItem, string, error) {
+	imagePath, err := s.imageStore.SaveSessionImage(ctx, restaurantID, fileName, content)
+	if err != nil {
+		return nil, "", err
+	}
+	items, err := s.menuExtractor.ExtractMenuItems(ctx, content)
+	if err != nil {
+		return nil, "", err
+	}
+	if err := s.store.SaveMenuSafetyMetadata(ctx, restaurantID, items); err != nil {
+		return nil, "", err
+	}
+	return items, imagePath, nil
+}
 func (s *ConciergeService) UploadSessionImage(ctx context.Context, sessionID, fileName string, content []byte) (string, error) {
 	path, err := s.imageStore.SaveSessionImage(ctx, sessionID, fileName, content)
 	if err != nil {

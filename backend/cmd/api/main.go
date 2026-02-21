@@ -31,6 +31,12 @@ type imageUploadRequest struct {
 	Base64   string `json:"base64"`
 }
 
+type menuExtractionResponse struct {
+	ImagePath string            `json:"imagePath"`
+	MenuItems []domain.MenuItem `json:"menuItems"`
+	Note      string            `json:"note"`
+}
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -120,25 +126,6 @@ func main() {
 			w.WriteHeader(http.StatusAccepted)
 			return
 		}
-		if len(parts) == 2 && parts[1] == "images" && r.Method == http.MethodPost {
-			var req imageUploadRequest
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-				http.Error(w, "invalid JSON", http.StatusBadRequest)
-				return
-			}
-			content, err := base64.StdEncoding.DecodeString(req.Base64)
-			if err != nil {
-				http.Error(w, "invalid base64 image", http.StatusBadRequest)
-				return
-			}
-			imagePath, err := concierge.UploadSessionImage(r.Context(), sessionID, req.FileName, content)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, map[string]string{"imagePath": imagePath})
-			return
-		}
 		if len(parts) == 2 && parts[1] == "ws" && r.Method == http.MethodGet {
 			http.Error(w, "websocket transport endpoint reserved for Gemini Live clients", http.StatusUpgradeRequired)
 			return
@@ -148,6 +135,35 @@ func main() {
 			return
 		}
 		http.NotFound(w, r)
+	})
+
+	mux.HandleFunc("/v1/restaurants/", func(w http.ResponseWriter, r *http.Request) {
+		parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/v1/restaurants/"), "/")
+		if len(parts) != 2 || parts[0] == "" || parts[1] != "menu-extraction" || r.Method != http.MethodPost {
+			http.NotFound(w, r)
+			return
+		}
+		restaurantID := parts[0]
+		var req imageUploadRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "invalid JSON", http.StatusBadRequest)
+			return
+		}
+		content, err := base64.StdEncoding.DecodeString(req.Base64)
+		if err != nil {
+			http.Error(w, "invalid base64 image", http.StatusBadRequest)
+			return
+		}
+		menuItems, imagePath, err := concierge.AutoExtractMenuFromImage(r.Context(), restaurantID, req.FileName, content)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writeJSON(w, menuExtractionResponse{
+			ImagePath: imagePath,
+			MenuItems: menuItems,
+			Note:      "Vision extraction is an optional restaurant onboarding workflow; live user sessions remain text/audio-first.",
+		})
 	})
 
 	log.Printf("backend listening on :%s", cfg.Port)
