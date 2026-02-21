@@ -56,17 +56,21 @@
 
 ## 6. Release Plan
 ### Phase 1 (Hackathon MVP)
-- [x] Voice interaction + allergy filtering
-- [x] Vision-based safety checks
-- [x] Basic combo recommendations
+- [x] Presence detection (vision)
+- [x] Voice ordering with Gemini Live
+- [x] Dietary extraction
+- [x] Personalized ranking logic
+- [x] Intelligent combo upsell
+- [x] Preference memory (simple scoring)
 - [x] Cloud deployment demo
 
-### Phase 2
-- [ ] Nutritional scoring
-- [ ] Predictive upsell models
-- [ ] Cross-contamination AI assistance
+### Phase 2 (Vision Intelligence)
+- [ ] Opt-in privacy compliant face recognition for returning guests
+- [ ] Emotion-aware recommendation tuning
+- [ ] Group detection for dynamic combo suggestions
 
-### Phase 3
-- [ ] POS integration
-- [ ] Loyalty personalization
-- [ ] Advanced analytics dashboard
+### Phase 3 (Revenue Optimization)
+- [ ] Reinforcement learning for upsell conversion
+- [ ] Cross-visit personalization
+- [ ] Predictive inventory-aware ranking
+
