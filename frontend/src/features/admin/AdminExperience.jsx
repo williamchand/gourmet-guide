@@ -7,8 +7,12 @@ export function AdminExperience() {
   const [selectedMenuItem, setSelectedMenuItem] = useState(MENU_ITEMS[0].id);
   const [comboItems, setComboItems] = useState(['Mediterranean Bowl']);
   const [comboName, setComboName] = useState('Lunch Balance Combo');
+  const [restaurantName, setRestaurantName] = useState('');
+  const [restaurantSlug, setRestaurantSlug] = useState('');
+  const [jwtToken, setJwtToken] = useState('');
 
   const selectedItem = menuItems.find((item) => item.id === selectedMenuItem);
+  const isLoggedIn = jwtToken.length > 0;
 
   const toggleTag = (allergy) => {
     setMenuItems((current) =>
@@ -33,8 +37,49 @@ export function AdminExperience() {
     );
   };
 
+  const loginWithGoogle = () => {
+    setJwtToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo.admin-token');
+  };
+
   return (
     <section className="panel-grid">
+      <article className="card">
+        <h2>Admin Access</h2>
+        <p>Sign in with Google JWT to configure your restaurant workspace.</p>
+        {isLoggedIn ? (
+          <p className="caption">JWT session active: {jwtToken}</p>
+        ) : (
+          <button type="button" className="primary-button" onClick={loginWithGoogle}>
+            Continue with Google
+          </button>
+        )}
+
+        <h3>Restaurant Setup</h3>
+        <label htmlFor="restaurant-name">Restaurant name</label>
+        <input
+          id="restaurant-name"
+          type="text"
+          value={restaurantName}
+          onChange={(event) => setRestaurantName(event.target.value)}
+          placeholder="e.g. Harbor Grill"
+          disabled={!isLoggedIn}
+        />
+        <label htmlFor="restaurant-slug">Restaurant ID / slug</label>
+        <input
+          id="restaurant-slug"
+          type="text"
+          value={restaurantSlug}
+          onChange={(event) => setRestaurantSlug(event.target.value)}
+          placeholder="e.g. harbor-grill"
+          disabled={!isLoggedIn}
+        />
+        {isLoggedIn && restaurantName && restaurantSlug && (
+          <p className="caption">
+            Setup ready for <strong>{restaurantName}</strong> ({restaurantSlug})
+          </p>
+        )}
+      </article>
+
       <article className="card">
         <h2>Menu Management Dashboard</h2>
         <p>
