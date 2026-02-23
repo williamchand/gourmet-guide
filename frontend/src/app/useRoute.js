@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { DEFAULT_ROUTE, ROUTES } from './routes.js';
 
 function normalizeRoute(pathname) {
-  if (pathname === ROUTES.customer || pathname === ROUTES.admin) {
+  if (
+    pathname === ROUTES.home ||
+    pathname === ROUTES.customer ||
+    pathname === ROUTES.admin
+  ) {
     return pathname;
   }
 
