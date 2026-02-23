@@ -1,12 +1,35 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import App from './App.jsx';
+
+async function waitForVoiceConfigLoad() {
+  await screen.findByText(/Gemini voice stream/i);
+}
 
 describe('App', () => {
   beforeEach(() => {
     window.history.pushState({}, '', '/');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        config: {
+          response_modalities: ['AUDIO'],
+          system_instruction: 'You are a helpful and friendly AI assistant.'
+        },
+        audio: {
+          send_sample_rate: 16000,
+          receive_sample_rate: 24000
+        }
+      })
+    });
   });
 
-  it('renders chooser by default and navigates to customer', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders chooser by default and navigates to customer', async () => {
     render(<App />);
 
     expect(screen.getByText('Choose your workspace.')).toBeInTheDocument();
@@ -14,11 +37,15 @@ describe('App', () => {
       screen.getByRole('button', { name: 'Open customer screen' })
     );
 
+    await waitForVoiceConfigLoad();
     expect(window.location.pathname).toBe('/customer');
     expect(screen.getByText('Customer Experience')).toBeInTheDocument();
     expect(screen.getByText('Listening now…')).toBeInTheDocument();
     expect(
       screen.getByText('Voice-ranked Recommendations')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/gemini-2.5-flash-native-audio-preview-12-2025/i)
     ).toBeInTheDocument();
   });
 
@@ -40,10 +67,11 @@ describe('App', () => {
     expect(screen.getByText('Menu Management Dashboard')).toBeInTheDocument();
   });
 
-  it('keeps always-on voice flow and logs interactions', () => {
+  it('keeps always-on voice flow and logs interactions', async () => {
     window.history.pushState({}, '', '/customer');
     render(<App />);
 
+    await waitForVoiceConfigLoad();
     expect(screen.getByText('Peanuts')).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole('button', { name: 'Add to order' })[0]);
     expect(
@@ -51,10 +79,11 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
-  it('supports restaurant-specific sessions and menus', () => {
+  it('supports restaurant-specific sessions and menus', async () => {
     window.history.pushState({}, '', '/customer');
     render(<App />);
 
+    await waitForVoiceConfigLoad();
     expect(screen.getByText('Listening now…')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Active Restaurant'), {
@@ -67,10 +96,11 @@ describe('App', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('opens menu detail popup and returns to recommendations', () => {
+  it('opens menu detail popup and returns to recommendations', async () => {
     window.history.pushState({}, '', '/customer');
     render(<App />);
 
+    await waitForVoiceConfigLoad();
     fireEvent.click(screen.getAllByRole('button', { name: 'Open details' })[0]);
     expect(
       screen.getByRole('dialog', { name: 'Menu detail popup' })
@@ -84,10 +114,11 @@ describe('App', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('supports order list and finalize order modal', () => {
+  it('supports order list and finalize order modal', async () => {
     window.history.pushState({}, '', '/customer');
     render(<App />);
 
+    await waitForVoiceConfigLoad();
     fireEvent.click(screen.getAllByRole('button', { name: 'Add to order' })[0]);
     expect(screen.getByText('Total: $24.00')).toBeInTheDocument();
 

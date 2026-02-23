@@ -17,7 +17,7 @@ func Load() (Config, error) {
 	cfg := Config{
 		Port:            getenv("PORT", "8080"),
 		ProjectID:       getenv("GOOGLE_CLOUD_PROJECT", "local-dev"),
-		GeminiModel:     getenv("GEMINI_MODEL", "gemini-2.0-flash-live-001"),
+		GeminiModel:     getenv("GEMINI_MODEL", "gemini-2.5-flash-native-audio-preview-12-2025"),
 		GoogleAPIKey:    os.Getenv("GOOGLE_API_KEY"),
 		FirestoreDBName: getenv("FIRESTORE_DATABASE", "(default)"),
 		Region:          getenv("GOOGLE_CLOUD_LOCATION", "us-central1"),
