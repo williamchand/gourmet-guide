@@ -3,40 +3,73 @@ import { CustomerExperience } from '../features/customer/CustomerExperience.jsx'
 import { ROUTES } from './routes.js';
 import { useRoute } from './useRoute.js';
 
-function RouteTabs({ route, onNavigate }) {
+function ExperienceChooser({ onNavigate }) {
   return (
-    <div className="view-toggle" role="tablist" aria-label="Experience toggle">
+    <section className="experience-chooser">
+      <h1>GourmetGuide</h1>
+      <p>Choose your workspace.</p>
+      <div className="experience-chooser__grid">
+        <article className="card">
+          <h2>Customer Experience</h2>
+          <p>
+            Voice-first tablet ordering with recommendations and live order
+            summary.
+          </p>
+          <button
+            type="button"
+            className="primary-button primary-button--active"
+            onClick={() => onNavigate(ROUTES.customer)}
+          >
+            Open customer screen
+          </button>
+        </article>
+        <article className="card">
+          <h2>Admin Experience</h2>
+          <p>Google JWT sign-in simulation and restaurant setup dashboard.</p>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => onNavigate(ROUTES.admin)}
+          >
+            Open admin screen
+          </button>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function ExperienceHeader({ route, onNavigate }) {
+  return (
+    <header className="experience-header">
       <button
         type="button"
-        role="tab"
-        aria-selected={route === ROUTES.customer}
-        className={`tab-button ${route === ROUTES.customer ? 'tab-button--active' : ''}`}
-        onClick={() => onNavigate(ROUTES.customer)}
+        className="chip"
+        onClick={() => onNavigate(ROUTES.home)}
       >
-        Customer Experience
+        Back to chooser
       </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={route === ROUTES.admin}
-        className={`tab-button ${route === ROUTES.admin ? 'tab-button--active' : ''}`}
-        onClick={() => onNavigate(ROUTES.admin)}
-      >
-        Admin Experience
-      </button>
-    </div>
+      <span className="caption">
+        {route === ROUTES.customer ? 'Customer view' : 'Admin view'}
+      </span>
+    </header>
   );
 }
 
 export function App() {
   const { route, navigate } = useRoute();
 
-  return (
-    <main className="container">
-      <h1>GourmetGuide</h1>
-      <p>Allergen-aware recommendations powered by Gemini on Google Cloud.</p>
+  if (route === ROUTES.home) {
+    return (
+      <main className="container">
+        <ExperienceChooser onNavigate={navigate} />
+      </main>
+    );
+  }
 
-      <RouteTabs route={route} onNavigate={navigate} />
+  return (
+    <main className="container container--immersive">
+      <ExperienceHeader route={route} onNavigate={navigate} />
       {route === ROUTES.admin ? <AdminExperience /> : <CustomerExperience />}
     </main>
   );

@@ -3,26 +3,32 @@ import App from './App.jsx';
 
 describe('App', () => {
   beforeEach(() => {
-    window.history.pushState({}, '', '/customer');
+    window.history.pushState({}, '', '/');
   });
 
-  it('renders customer experience by default', () => {
+  it('renders chooser by default and navigates to customer', () => {
     render(<App />);
 
-    expect(screen.getByText('Realtime Concierge')).toBeInTheDocument();
+    expect(screen.getByText('Choose your workspace.')).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Open customer screen' })
+    );
+
+    expect(window.location.pathname).toBe('/customer');
+    expect(screen.getByText('Customer Experience')).toBeInTheDocument();
+    expect(screen.getByText('Listening now…')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: 'Start microphone' })
+      screen.getByText('Voice-ranked Recommendations')
     ).toBeInTheDocument();
-    expect(screen.getByText('Transcript Stream')).toBeInTheDocument();
   });
 
-  it('switches to admin dashboard experience and updates route', () => {
+  it('navigates to admin from chooser', () => {
     render(<App />);
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Admin Experience' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open admin screen' }));
 
     expect(window.location.pathname).toBe('/admin');
-    expect(screen.getByText('Menu Management Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Admin Access')).toBeInTheDocument();
     expect(screen.getByText('Combo Builder')).toBeInTheDocument();
   });
 
@@ -34,46 +40,90 @@ describe('App', () => {
     expect(screen.getByText('Menu Management Dashboard')).toBeInTheDocument();
   });
 
-  it('runs the customer journey: microphone + allergy updates + vision upload', () => {
+  it('keeps always-on voice flow and logs interactions', () => {
+    window.history.pushState({}, '', '/customer');
     render(<App />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Start microphone' }));
+    expect(screen.getByText('Peanuts')).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add to order' })[0]);
     expect(
-      screen.getByText(/Listening… tell me what dish/)
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Shellfish' }));
-    expect(
-      screen.getByText(/Updated allergy profile to include Shellfish/)
-    ).toBeInTheDocument();
-
-    const file = new File(['menu image bytes'], 'menu-photo.png', {
-      type: 'image/png'
-    });
-    fireEvent.change(screen.getByLabelText('Upload/capture menu image'), {
-      target: { files: [file] }
-    });
-
-    expect(screen.getByText('Queued image: menu-photo.png')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Analyzing menu-photo.png for allergen signals/)
+      screen.getByText(/has been added to your order list/)
     ).toBeInTheDocument();
   });
 
-  it('runs the admin journey: update combo and preview', () => {
+  it('supports restaurant-specific sessions and menus', () => {
+    window.history.pushState({}, '', '/customer');
+    render(<App />);
+
+    expect(screen.getByText('Listening now…')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Active Restaurant'), {
+      target: { value: 'green-garden' }
+    });
+
+    expect(screen.getByText('Tofu Lettuce Wraps')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Herb-Roasted Salmon Plate')
+    ).not.toBeInTheDocument();
+  });
+
+  it('opens menu detail popup and returns to recommendations', () => {
+    window.history.pushState({}, '', '/customer');
+    render(<App />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Open details' })[0]);
+    expect(
+      screen.getByRole('dialog', { name: 'Menu detail popup' })
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Back to recommendations' })
+    );
+    expect(
+      screen.queryByRole('dialog', { name: 'Menu detail popup' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('supports order list and finalize order modal', () => {
+    window.history.pushState({}, '', '/customer');
+    render(<App />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add to order' })[0]);
+    expect(screen.getByText('Total: $24.00')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Finalize order' }));
+    expect(
+      screen.getByRole('dialog', { name: 'Finalize order confirmation' })
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Keep exploring menu' })
+    );
+    expect(
+      screen.queryByRole('dialog', { name: 'Finalize order confirmation' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('runs the admin journey: login + setup + combo update', () => {
     window.history.pushState({}, '', '/admin');
     render(<App />);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' })
+    );
+    expect(screen.getByText(/JWT session active/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Restaurant name'), {
+      target: { value: 'Hackathon Bistro' }
+    });
+    fireEvent.change(screen.getByLabelText('Restaurant ID / slug'), {
+      target: { value: 'hackathon-bistro' }
+    });
+    expect(screen.getByText(/Setup ready for/)).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Combo name'), {
       target: { value: 'Hackathon Special Combo' }
     });
     expect(screen.getByText('Hackathon Special Combo')).toBeInTheDocument();
-
-    const itemToggle = screen.getByRole('checkbox', {
-      name: 'Citrus Herb Chicken'
-    });
-    fireEvent.click(itemToggle);
-
-    expect(screen.getByRole('listitem', { name: 'Citrus Herb Chicken' })).toBeInTheDocument();
   });
 });

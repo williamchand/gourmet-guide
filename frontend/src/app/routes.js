@@ -1,6 +1,7 @@
 export const ROUTES = {
+  home: '/',
   customer: '/customer',
   admin: '/admin'
 };
 
-export const DEFAULT_ROUTE = ROUTES.customer;
+export const DEFAULT_ROUTE = ROUTES.home;
