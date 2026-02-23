@@ -4,8 +4,9 @@ A friendly, allergen-aware AI restaurant concierge with smart combo recommendati
 
 ## Live Agents Compliance (Execution Plan 0-1)
 This repository includes a cost-aware foundation for the first delivery phase:
-- ✅ Gemini model usage for all agentic runtime calls (`gemini-2.0-flash-live-001` default).
+- ✅ Gemini model usage for all agentic runtime calls (`gemini-2.5-flash-native-audio-preview-12-2025` default).
 - ✅ Agent runtime scaffold using Google GenAI SDK, with Vertex AI path for Gemini in cloud builds.
+- ✅ Voice streaming contract endpoint (`GET /v1/realtime/voice-config`) aligned with Gemini Live audio settings (16kHz in / 24kHz out PCM).
 - ✅ Cheap managed GCP baseline: Cloud Run + Firestore + Cloud Storage.
 - ✅ Monorepo conventions and CI/tooling baseline across backend, frontend, and infra.
 
@@ -50,6 +51,17 @@ npm run build
 scripts/deploy_frontend_gcs.sh --bucket <your-bucket-name> --project <your-project-id>
 ```
 Detailed guide: `docs/frontend_gcs_deploy.md`.
+
+
+### Realtime voice websocket (Go backend)
+The main Go backend now exposes realtime voice endpoints directly:
+- `GET /v1/realtime/voice-config`
+- `WS /ws/{user_id}/{session_id}`
+- `WS /v1/sessions/{session_id}/ws`
+
+Upstream websocket accepts binary audio frames (`audio/pcm;rate=16000`) or JSON messages (`text`, `audio`, `image`, `activity_start`, `activity_end`, `close`).
+Manual activity signals require `ENABLE_MANUAL_ACTIVITY_SIGNALS=true`.
+Frontend dev server proxies `/v1` and `/ws` to `http://localhost:8080` so the customer UI uses the Go backend realtime endpoints during local development.
 
 ### Infrastructure
 ```bash

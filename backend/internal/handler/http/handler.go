@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +18,34 @@ type Handler struct {
 	app *service.ConciergeApp
 }
 
+type voiceStreamingConfigResponse struct {
+	Model  string `json:"model"`
+	Config struct {
+		ResponseModalities           []string       `json:"response_modalities"`
+		SystemInstruction            string         `json:"system_instruction"`
+		SpeechConfig                 map[string]any `json:"speech_config"`
+		ManualActivitySignalsEnabled bool           `json:"manual_activity_signals_enabled"`
+		EnableProactiveAudio         bool           `json:"enable_proactive_audio"`
+		EnableAffectiveDialog        bool           `json:"enable_affective_dialog"`
+		SessionResumptionEnabled     bool           `json:"session_resumption_enabled"`
+		ContextWindowCompressionOn   bool           `json:"context_window_compression_enabled"`
+		ContextWindowCompression     map[string]int `json:"context_window_compression"`
+		SaveLiveBlob                 bool           `json:"save_live_blob"`
+		SupportCFC                   bool           `json:"support_cfc"`
+		MaxLLMCalls                  *int           `json:"max_llm_calls"`
+		CustomMetadata               map[string]any `json:"custom_metadata"`
+	} `json:"config"`
+	Audio struct {
+		Format            string `json:"format"`
+		Channels          int    `json:"channels"`
+		SendSampleRate    int    `json:"send_sample_rate"`
+		ReceiveSampleRate int    `json:"receive_sample_rate"`
+		ChunkSize         int    `json:"chunk_size"`
+		InputMimeType     string `json:"input_mime_type"`
+		OutputMimeType    string `json:"output_mime_type"`
+	} `json:"audio"`
+}
+
 func NewHandler(app *service.ConciergeApp) *Handler {
 	return &Handler{app: app}
 }
@@ -23,10 +53,53 @@ func NewHandler(app *service.ConciergeApp) *Handler {
 func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", h.handleHealth)
+	mux.HandleFunc("/v1/realtime/voice-config", h.handleVoiceStreamingConfig)
+	mux.HandleFunc("/ws/", h.handleRealtimeWebSocket)
 	mux.HandleFunc("/v1/sessions", h.handleSessions)
 	mux.HandleFunc("/v1/sessions/", h.handleSessionByID)
 	mux.HandleFunc("/v1/restaurants/", h.handleRestaurantRoutes)
 	return mux
+}
+
+func (h *Handler) handleVoiceStreamingConfig(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	response := voiceStreamingConfigResponse{Model: getenv("GEMINI_MODEL", "gemini-2.5-flash-native-audio-preview-12-2025")}
+	response.Config.ResponseModalities = []string{"AUDIO"}
+	response.Config.SystemInstruction = "You are a helpful and friendly AI assistant."
+	response.Config.SpeechConfig = map[string]any{
+		"voice_name":    getenv("VOICE_NAME", "Aoede"),
+		"language_code": getenv("VOICE_LANGUAGE_CODE", "en-US"),
+	}
+	response.Config.ManualActivitySignalsEnabled = getenvBool("ENABLE_MANUAL_ACTIVITY_SIGNALS", false)
+	response.Config.EnableProactiveAudio = getenvBool("ENABLE_PROACTIVE_AUDIO", false)
+	response.Config.EnableAffectiveDialog = getenvBool("ENABLE_AFFECTIVE_DIALOG", false)
+	response.Config.SessionResumptionEnabled = getenvBool("ENABLE_SESSION_RESUMPTION", true)
+	response.Config.ContextWindowCompressionOn = getenvBool("ENABLE_CONTEXT_WINDOW_COMPRESSION", false)
+	response.Config.ContextWindowCompression = map[string]int{
+		"trigger_tokens": getenvInt("CONTEXT_COMPRESSION_TRIGGER_TOKENS", 100000),
+		"target_tokens":  getenvInt("CONTEXT_COMPRESSION_TARGET_TOKENS", 80000),
+	}
+	response.Config.SaveLiveBlob = getenvBool("SAVE_LIVE_BLOB", false)
+	response.Config.SupportCFC = getenvBool("SUPPORT_CFC", false)
+	response.Config.MaxLLMCalls = getenvOptionalInt("MAX_LLM_CALLS")
+	response.Config.CustomMetadata = map[string]any{
+		"app":               "gourmet-guide-bidi",
+		"transport":         "websocket",
+		"response_modality": "AUDIO",
+	}
+	response.Audio.Format = "pcm16"
+	response.Audio.Channels = 1
+	response.Audio.SendSampleRate = 16000
+	response.Audio.ReceiveSampleRate = 24000
+	response.Audio.ChunkSize = 1024
+	response.Audio.InputMimeType = "audio/pcm"
+	response.Audio.OutputMimeType = "audio/pcm"
+
+	writeJSON(w, response)
 }
 
 type startSessionRequest struct {
@@ -140,7 +213,7 @@ func (h *Handler) handleSessionByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(parts) == 2 && parts[1] == "ws" && r.Method == http.MethodGet {
-		http.Error(w, "websocket transport endpoint reserved for Gemini Live clients", http.StatusUpgradeRequired)
+		h.handleRealtimeWebSocketSession(w, r, sessionID)
 		return
 	}
 	if len(parts) == 2 && parts[1] == "stream" && r.Method == http.MethodGet {
@@ -230,4 +303,44 @@ func handleRealtimeStream(w http.ResponseWriter, r *http.Request, app *service.C
 			flusher.Flush()
 		}
 	}
+}
+
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
+}
+
+func getenvBool(key string, fallback bool) bool {
+	value := strings.TrimSpace(strings.ToLower(os.Getenv(key)))
+	if value == "" {
+		return fallback
+	}
+	return value == "1" || value == "true" || value == "yes" || value == "on"
+}
+
+func getenvInt(key string, fallback int) int {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func getenvOptionalInt(key string) *int {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return nil
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return nil
+	}
+	return &parsed
 }

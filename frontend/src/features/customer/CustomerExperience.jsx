@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_SESSION,
   RESTAURANTS,
   RESTAURANT_MENUS
 } from './customerData.js';
+import {
+  DEFAULT_GEMINI_VOICE_STREAMING_CONFIG,
+  fetchVoiceStreamingConfig
+} from './voiceStreamingConfig.js';
 
 function cloneSession() {
   return {
@@ -32,6 +36,11 @@ export function CustomerExperience() {
       {}
     )
   );
+
+  const [voiceConfig, setVoiceConfig] = useState(
+    DEFAULT_GEMINI_VOICE_STREAMING_CONFIG
+  );
+  const [voiceConfigStatus, setVoiceConfigStatus] = useState('loading');
 
   const currentSession = sessionsByRestaurant[restaurantId] ?? cloneSession();
   const { allergies, transcript, orderItems } = currentSession;
@@ -135,6 +144,28 @@ export function CustomerExperience() {
     });
     updateSession((session) => ({ ...session, orderItems: [] }));
   };
+
+  useEffect(() => {
+    let isActive = true;
+    fetchVoiceStreamingConfig()
+      .then((config) => {
+        if (!isActive) {
+          return;
+        }
+        setVoiceConfig(config);
+        setVoiceConfigStatus('connected');
+      })
+      .catch(() => {
+        if (!isActive) {
+          return;
+        }
+        setVoiceConfigStatus('fallback');
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   return (
     <section className="customer-layout customer-layout--immersive">
@@ -279,6 +310,10 @@ export function CustomerExperience() {
           </div>
 
           <h3>Voice Chat Flow</h3>
+          <p className="caption">
+            {`Gemini voice stream (${voiceConfigStatus}): ${voiceConfig.model} · ${voiceConfig.audio.send_sample_rate / 1000}kHz mic in · ${voiceConfig.audio.receive_sample_rate / 1000}kHz audio out`}
+          </p>
+          <p className="caption">{`System prompt: ${voiceConfig.config.system_instruction}`}</p>
           <ul className="timeline timeline--fixed timeline--two-slots">
             {condensedTranscript.map((entry) => (
               <li
