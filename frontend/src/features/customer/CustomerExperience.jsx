@@ -53,6 +53,26 @@ export function CustomerExperience() {
     });
   }, [allergies, restaurantId]);
 
+  const condensedTranscript = useMemo(() => {
+    const latestAssistant = [...transcript]
+      .reverse()
+      .find((entry) => entry.speaker === 'Assistant');
+    const latestCustomer = [...transcript]
+      .reverse()
+      .find((entry) => entry.speaker === 'Customer');
+
+    return [
+      {
+        speaker: 'Assistant',
+        text: latestAssistant?.text ?? 'Ready to recommend your next dish.'
+      },
+      {
+        speaker: 'Customer',
+        text: latestCustomer?.text ?? 'Tell me what you feel like eating.'
+      }
+    ];
+  }, [transcript]);
+
   const selectedMenu =
     recommendations.find((entry) => entry.title === selectedMenuTitle) ?? null;
 
@@ -143,132 +163,134 @@ export function CustomerExperience() {
         </div>
       </article>
 
-      <article className="card customer-column customer-column--menu">
-        <div className="recommendation-header">
-          <h2>Voice-ranked Recommendations</h2>
-          <p className="caption">Say: “Open details for Salmon Plate”.</p>
-        </div>
-        <div className="recommendation-list recommendation-list--tablet-fit">
-          {recommendations.map((entry) => (
-            <section
-              key={entry.title}
-              className="recommendation recommendation--tablet"
-            >
-              <img
-                className="recommendation__image"
-                src={entry.image}
-                alt={entry.title}
-              />
-              <div className="recommendation__body">
-                <h3>{entry.title}</h3>
-                <div className="tag-row">
-                  {entry.dietaryTags.map((tag) => (
-                    <span key={tag} className="dietary-tag">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <p className="price">{formatPrice(entry.price)}</p>
-                <div className="recommendation__actions">
-                  <button
-                    type="button"
-                    className="chip"
-                    onClick={() => openDetails(entry)}
-                  >
-                    Open details
-                  </button>
-                  <button
-                    type="button"
-                    className="primary-button"
-                    onClick={() => addToOrder(entry)}
-                    disabled={!entry.safeToOrder}
-                  >
-                    {entry.safeToOrder ? 'Add to order' : 'Review allergy'}
-                  </button>
-                </div>
-              </div>
-            </section>
-          ))}
-        </div>
-      </article>
-
-      <article className="card customer-column customer-column--order">
-        <h2>Order List</h2>
-        {orderItems.length === 0 ? (
-          <p className="caption">
-            No items yet. Add dishes from recommendations.
-          </p>
-        ) : (
-          <ul className="order-list">
-            {orderItems.map((item, index) => (
-              <li key={`${item.title}-${index}`} className="order-list__item">
-                <div>
-                  <p className="order-list__name">{item.title}</p>
+      <article className="card customer-unified-panel">
+        <section className="customer-column customer-column--menu">
+          <div className="recommendation-header">
+            <h2>Voice-ranked Recommendations</h2>
+            <p className="caption">Say: “Open details for Salmon Plate”.</p>
+          </div>
+          <div className="recommendation-list recommendation-list--tablet-fit">
+            {recommendations.map((entry) => (
+              <section
+                key={entry.title}
+                className="recommendation recommendation--tablet"
+              >
+                <img
+                  className="recommendation__image"
+                  src={entry.image}
+                  alt={entry.title}
+                />
+                <div className="recommendation__body">
+                  <h3>{entry.title}</h3>
                   <div className="tag-row">
-                    {item.dietaryTags.map((tag) => (
-                      <span
-                        key={`${item.title}-${tag}-${index}`}
-                        className="dietary-tag"
-                      >
+                    {entry.dietaryTags.map((tag) => (
+                      <span key={tag} className="dietary-tag">
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <p className="price">{formatPrice(item.price)}</p>
+                  <p className="price">{formatPrice(entry.price)}</p>
+                  <div className="recommendation__actions">
+                    <button
+                      type="button"
+                      className="chip"
+                      onClick={() => openDetails(entry)}
+                    >
+                      Open details
+                    </button>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() => addToOrder(entry)}
+                      disabled={!entry.safeToOrder}
+                    >
+                      {entry.safeToOrder ? 'Add to order' : 'Review allergy'}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={() => removeFromOrder(index)}
-                >
-                  Remove
-                </button>
+              </section>
+            ))}
+          </div>
+        </section>
+
+        <section className="customer-column customer-column--order">
+          <h2>Order List</h2>
+          {orderItems.length === 0 ? (
+            <p className="caption">
+              No items yet. Add dishes from recommendations.
+            </p>
+          ) : (
+            <ul className="order-list">
+              {orderItems.map((item, index) => (
+                <li key={`${item.title}-${index}`} className="order-list__item">
+                  <div>
+                    <p className="order-list__name">{item.title}</p>
+                    <div className="tag-row">
+                      {item.dietaryTags.map((tag) => (
+                        <span
+                          key={`${item.title}-${tag}-${index}`}
+                          className="dietary-tag"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="price">{formatPrice(item.price)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() => removeFromOrder(index)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="risk">Total: {formatPrice(orderTotal)}</p>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setIsCheckoutOpen(true)}
+            disabled={orderItems.length === 0}
+          >
+            Finalize order
+          </button>
+          {checkoutStatus && <p className="caption">{checkoutStatus}</p>}
+        </section>
+
+        <section className="customer-column customer-column--voice">
+          <div className="voice-panel-header">
+            <button
+              type="button"
+              className="chip chip--active listening-pill"
+              aria-live="polite"
+            >
+              Listening now…
+            </button>
+            <div className="tag-row tag-row--compact">
+              {allergies.map((allergy) => (
+                <span key={allergy} className="dietary-tag dietary-tag--danger">
+                  {allergy}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <h3>Voice Chat Flow</h3>
+          <ul className="timeline timeline--fixed timeline--two-slots">
+            {condensedTranscript.map((entry) => (
+              <li
+                key={entry.speaker}
+                className={`message message--${entry.speaker.toLowerCase()}`}
+              >
+                <strong>{entry.speaker}</strong>
+                <p>{entry.text}</p>
               </li>
             ))}
           </ul>
-        )}
-        <p className="risk">Total: {formatPrice(orderTotal)}</p>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={() => setIsCheckoutOpen(true)}
-          disabled={orderItems.length === 0}
-        >
-          Finalize order
-        </button>
-        {checkoutStatus && <p className="caption">{checkoutStatus}</p>}
-      </article>
-
-      <article className="card customer-column customer-column--voice">
-        <div className="voice-panel-header">
-          <button
-            type="button"
-            className="chip chip--active listening-pill"
-            aria-live="polite"
-          >
-            Listening now…
-          </button>
-          <div className="tag-row tag-row--compact">
-            {allergies.map((allergy) => (
-              <span key={allergy} className="dietary-tag dietary-tag--danger">
-                {allergy}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <h3>Voice Chat Flow</h3>
-        <ul className="timeline timeline--fixed">
-          {transcript.map((entry, index) => (
-            <li
-              key={`${entry.speaker}-${index}`}
-              className={`message message--${entry.speaker.toLowerCase()}`}
-            >
-              <strong>{entry.speaker}</strong>
-              <p>{entry.text}</p>
-            </li>
-          ))}
-        </ul>
+        </section>
       </article>
 
       {selectedMenu && (

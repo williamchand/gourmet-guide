@@ -76,12 +76,7 @@ body {
 }
 
 .customer-layout--immersive {
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 0.95fr);
-  grid-template-areas:
-    'toolbar toolbar'
-    'menu order'
-    'voice voice';
+  grid-template-rows: auto minmax(0, 1fr);
   height: calc(100vh - 150px);
   min-height: 620px;
   max-height: 760px;
@@ -109,20 +104,10 @@ body {
   margin-top: 0;
 }
 
-.customer-column--menu {
-  grid-area: menu;
-}
-
-.customer-column--order {
-  grid-area: order;
-}
-
-.customer-column--voice {
-  grid-area: voice;
-}
-
-.customer-column {
-  height: 100%;
+.customer-unified-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: 0.7rem;
   overflow: hidden;
 }
 
@@ -130,6 +115,11 @@ body {
 .customer-column--menu,
 .customer-column--order {
   scrollbar-width: thin;
+}
+
+.customer-column {
+  height: 100%;
+  overflow: hidden;
 }
 
 .card {
@@ -270,12 +260,15 @@ input[type='file'] {
   }
 
   .customer-layout--immersive {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) minmax(0, 0.9fr);
     height: calc(100vh - 120px);
     min-height: 500px;
     max-height: 640px;
     gap: 0.55rem;
+  }
+
+  .customer-unified-panel {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 0.5rem;
   }
 
   .card {
@@ -307,10 +300,13 @@ input[type='file'] {
   }
 
   .customer-layout--immersive {
-    grid-template-columns: 1fr;
     height: auto;
     max-height: none;
     overflow: visible;
+  }
+
+  .customer-unified-panel {
+    grid-template-columns: 1fr;
   }
 
   .customer-toolbar {
@@ -414,6 +410,16 @@ input[type='file'] {
   border-radius: 0.6rem;
   padding: 0.5rem;
   background: #f8fafc;
+}
+
+.timeline--two-slots {
+  max-height: 150px;
+  min-height: 150px;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.timeline--two-slots .message {
+  padding: 0.45rem 0.55rem;
 }
 
 .recommendation-list--compact {
