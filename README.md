@@ -71,6 +71,28 @@ terraform fmt -check
 terraform validate
 ```
 
+
+### Automated deploy with GitHub Actions (Terraform + GCP)
+Tag-based releases are fully automated using `.github/workflows/deploy.yml`:
+- Builds and pushes backend Docker image to Artifact Registry using the release tag as image tag (fallback: commit SHA).
+- Runs `terraform apply` for backend infrastructure on Google Cloud.
+- Builds frontend and syncs `frontend/dist` to a Google Cloud Storage bucket.
+
+Trigger this workflow by creating a tag such as `v1.0.0` and pushing it to GitHub.
+
+Set these repository **Variables**:
+- `GCP_PROJECT_ID`
+- `GCP_REGION`
+- `GCP_ARTIFACT_REGISTRY_REPO`
+- `DEPLOY_ENVIRONMENT` (for example `prod`)
+- `FRONTEND_GCS_BUCKET`
+
+Set these repository **Secrets**:
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`
+- `GCP_SERVICE_ACCOUNT`
+
+> The service account behind `GCP_SERVICE_ACCOUNT` must allow Terraform resource management and GCS static-asset deployment.
+
 ## Local Emulator Workflow
 Use `docker-compose.dev.yml` to run Firestore + Cloud Storage emulators for local seed/publish testing.
 
