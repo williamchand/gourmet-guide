@@ -54,3 +54,9 @@ variable "vpc_connector" {
   type        = string
   default     = ""
 }
+
+variable "frontend_public_access" {
+  description = "Make frontend bucket publicly accessible via allUsers."
+  type        = bool
+  default     = true
+}

@@ -43,6 +43,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      frontend_bucket: ${{ steps.outputs.outputs.frontend_bucket }}
     steps:
       - uses: actions/checkout@v4
 
@@ -66,6 +68,11 @@ jobs:
         run: |
           terraform init
           terraform apply -auto-approve
+
+      - id: outputs
+        working-directory: infra
+        run: |
+          echo "frontend_bucket=$(terraform output -raw frontend_bucket)" >> "$GITHUB_OUTPUT"
 
   deploy_frontend:
     runs-on: ubuntu-latest
@@ -96,4 +103,4 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - run: gcloud storage rsync --recursive --delete-unmatched-destination-objects frontend/dist "gs://${{ vars.FRONTEND_GCS_BUCKET }}"
+      - run: gcloud storage rsync --recursive --delete-unmatched-destination-objects frontend/dist "gs://${{ needs.terraform_apply.outputs.frontend_bucket }}"

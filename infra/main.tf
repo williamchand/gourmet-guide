@@ -15,9 +15,10 @@ provider "google" {
 }
 
 locals {
-  name_prefix      = "gourmet-guide-${var.environment}"
-  image_bucket     = "${var.project_id}-${var.environment}-menu-images"
-  run_service_name = "${local.name_prefix}-backend"
+  name_prefix        = "gourmet-guide-${var.environment}"
+  image_bucket       = "${var.project_id}-${var.environment}-menu-images"
+  frontend_bucket    = "${var.project_id}-${var.environment}-frontend"
+  run_service_name   = "${local.name_prefix}-backend"
 }
 
 resource "google_firestore_database" "default" {
@@ -36,6 +37,26 @@ resource "google_storage_bucket" "menu_images" {
   location                    = var.region
   uniform_bucket_level_access = true
   force_destroy               = false
+}
+
+resource "google_storage_bucket" "frontend" {
+  name                        = local.frontend_bucket
+  location                    = var.region
+  uniform_bucket_level_access = true
+  force_destroy               = false
+
+  website {
+    main_page_suffix = "index.html"
+    not_found_page   = "404.html"
+  }
+}
+
+resource "google_storage_bucket_iam_member" "frontend_public" {
+  count = var.frontend_public_access ? 1 : 0
+
+  bucket = google_storage_bucket.frontend.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
 }
 
 resource "google_service_account" "backend_runtime" {

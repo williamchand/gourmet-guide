@@ -13,6 +13,16 @@ output "menu_image_bucket" {
   value       = google_storage_bucket.menu_images.name
 }
 
+output "frontend_bucket" {
+  description = "GCS bucket for frontend static hosting"
+  value       = google_storage_bucket.frontend.name
+}
+
+output "frontend_bucket_url" {
+  description = "Public URL for the frontend bucket (if public access enabled)"
+  value       = "https://storage.googleapis.com/${google_storage_bucket.frontend.name}"
+}
+
 output "runtime_service_account_email" {
   description = "Runtime service account for backend access"
   value       = google_service_account.backend_runtime.email
