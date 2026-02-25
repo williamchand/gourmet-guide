@@ -15,10 +15,10 @@ provider "google" {
 }
 
 locals {
-  name_prefix        = "gourmet-guide-${var.environment}"
-  image_bucket       = "${var.project_id}-${var.environment}-menu-images"
-  frontend_bucket    = "${var.project_id}-${var.environment}-frontend"
-  run_service_name   = "${local.name_prefix}-backend"
+  name_prefix      = "gourmet-guide-${var.environment}"
+  image_bucket     = "${var.project_id}-${var.environment}-menu-images"
+  frontend_bucket  = "${var.project_id}-${var.environment}-frontend"
+  run_service_name = "${local.name_prefix}-backend"
 }
 
 resource "google_firestore_database" "default" {
