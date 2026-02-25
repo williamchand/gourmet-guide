@@ -1,8 +1,0 @@
-project_id             = "your-gcp-project-id"
-environment            = "prod"
-region                 = "us-central1"
-backend_image          = "docker.io/your-dockerhub-username/gourmet-guide-backend:prod"
-gemini_model           = "gemini-2.0-flash-live-001"
-cloud_run_ingress      = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
-allow_unauthenticated  = false
-vpc_connector          = "projects/your-gcp-project-id/locations/us-central1/connectors/prod-serverless"
