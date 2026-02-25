@@ -3,7 +3,7 @@
 This repository includes `.github/workflows/deploy.yml` for end-to-end automated deployment on version tag pushes (for example `v1.2.0`) or published GitHub releases.
 
 ## What gets deployed
-1. Backend container is built from `backend/` and pushed to Artifact Registry (tagged with `github.ref_name`, typically your release tag).
+1. Backend container is built from `backend/` and pushed to a container registry such as Docker Hub, GitHub Packages, or any registry you configure (tagged with `github.ref_name`, typically your release tag).
 2. Terraform applies infrastructure from `infra/` on Google Cloud Platform:
    - Google Cloud Run backend service
    - Firestore and Cloud Storage resources
@@ -13,11 +13,13 @@ This repository includes `.github/workflows/deploy.yml` for end-to-end automated
 ### Variables
 - `GCP_PROJECT_ID`
 - `GCP_REGION`
-- `GCP_ARTIFACT_REGISTRY_REPO`
 - `DEPLOY_ENVIRONMENT`
 - `FRONTEND_GCS_BUCKET`
+- `DOCKER_REGISTRY` – the registry/repository prefix to push images to (e.g. `docker.io/myorg/gourmet-guide`).
 
 ### Secrets
+- `DOCKER_USERNAME` (registry user or org)
+- `DOCKER_PASSWORD` (registry password or personal access token)
 - `GCP_WORKLOAD_IDENTITY_PROVIDER`
 - `GCP_SERVICE_ACCOUNT`
 
