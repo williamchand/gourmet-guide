@@ -15,7 +15,7 @@ This repository includes `.github/workflows/deploy.yml` for end-to-end automated
 - `GCP_REGION`
 - `DEPLOY_ENVIRONMENT`
 - `FRONTEND_GCS_BUCKET`
-- `DOCKER_REGISTRY` – the registry/repository prefix to push images to (e.g. `docker.io/myorg/gourmet-guide`).
+- `DOCKER_REGISTRY` – the full image name to push (e.g., `docker.io/myorg/gourmet-guide-backend`).
 
 ### Secrets
 - `DOCKER_USERNAME` (registry user or org)

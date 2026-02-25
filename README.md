@@ -85,7 +85,7 @@ Set these repository **Variables** (all except the registry prefix are still GCP
 - `GCP_REGION`
 - `DEPLOY_ENVIRONMENT` (for example `prod`)
 - `FRONTEND_GCS_BUCKET`
-- `DOCKER_REGISTRY` – the repository prefix you will push to, for example `docker.io/myorg/gourmet-guide` or `ghcr.io/myorg/gourmet-guide`.
+- `DOCKER_REGISTRY` – the full image name to push, for example `docker.io/myorg/gourmet-guide-backend` or `ghcr.io/myorg/gourmet-guide-backend`.
 
 Set these repository **Secrets**:
 - `DOCKER_USERNAME` (for the registry)
